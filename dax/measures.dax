@@ -1,0 +1,67 @@
+// =============================================================
+// Procurement Performance Dashboard · DAX
+// Tables: PurchaseLines, Suppliers, Plants (from data/procurement_sample.xlsx)
+//         'Date' (calculated table below)
+// Relationships (single direction, many-to-one):
+//   PurchaseLines[PO Date]     -> 'Date'[Date]          (mark 'Date' as date table)
+//   PurchaseLines[Supplier ID] -> Suppliers[Supplier ID]
+//   PurchaseLines[Plant ID]    -> Plants[Plant ID]
+// =============================================================
+
+// ---------- Calculated table ----------
+Date =
+VAR _min = DATE ( YEAR ( MIN ( PurchaseLines[PO Date] ) ), 1, 1 )
+VAR _max = DATE ( YEAR ( MAX ( PurchaseLines[PO Date] ) ), 12, 31 )
+RETURN
+    ADDCOLUMNS (
+        CALENDAR ( _min, _max ),
+        "Year", YEAR ( [Date] ),
+        "Quarter", "Q" & QUARTER ( [Date] ),
+        "Month No", MONTH ( [Date] ),
+        "Month", FORMAT ( [Date], "MMM" ),
+        "Year Month", FORMAT ( [Date], "YYYY-MM" )
+    )
+// Sort 'Date'[Month] by 'Date'[Month No]
+
+// ---------- Spend ----------
+Total Spend = SUM ( PurchaseLines[Spend EUR] )
+
+Spend LY = CALCULATE ( [Total Spend], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+Spend YoY % = DIVIDE ( [Total Spend] - [Spend LY], [Spend LY] )
+
+Spend Subtitle = FORMAT ( [Spend YoY %], "+0.0%;-0.0%" ) & " vs last year"
+
+// ---------- Savings ----------
+Savings = SUM ( PurchaseLines[Savings EUR] )
+
+Savings % of Spend = DIVIDE ( [Savings], [Total Spend] )
+
+Savings Subtitle = FORMAT ( [Savings % of Spend], "0.0%" ) & " of spend"
+
+// ---------- Delivery ----------
+On-Time Delivery % =
+DIVIDE (
+    COUNTROWS ( FILTER ( PurchaseLines, PurchaseLines[Receipt Date] <= PurchaseLines[Requested Delivery Date] ) ),
+    COUNTROWS ( PurchaseLines )
+)
+
+OTD LY = CALCULATE ( [On-Time Delivery %], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+OTD Subtitle = FORMAT ( ( [On-Time Delivery %] - [OTD LY] ) * 100, "+0.0;-0.0" ) & " pts vs last year"
+
+// ---------- Process ----------
+Avg PO Cycle Days =
+AVERAGEX ( PurchaseLines, DATEDIFF ( PurchaseLines[PR Date], PurchaseLines[PO Date], DAY ) )
+
+PO Cycle LY = CALCULATE ( [Avg PO Cycle Days], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )
+
+PO Cycle Subtitle = FORMAT ( [Avg PO Cycle Days] - [PO Cycle LY], "+0.0;−0.0" ) & " days vs last year"
+
+// ---------- Supplier risk ----------
+Single-Source Spend % =
+DIVIDE ( CALCULATE ( [Total Spend], Suppliers[Sourcing Type] = "Single source" ), [Total Spend] )
+
+Active Suppliers = DISTINCTCOUNT ( PurchaseLines[Supplier ID] )
+
+PO Lines = COUNTROWS ( PurchaseLines )

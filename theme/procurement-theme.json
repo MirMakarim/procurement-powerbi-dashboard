@@ -1,0 +1,24 @@
+{
+  "name": "Procurement Navy",
+  "dataColors": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"],
+  "foreground": "#0b0b0b",
+  "foregroundNeutralSecondary": "#52514e",
+  "background": "#ffffff",
+  "backgroundLight": "#f6f8fb",
+  "tableAccent": "#1f3864",
+  "good": "#1baf7a",
+  "neutral": "#eda100",
+  "bad": "#e34948",
+  "textClasses": {
+    "title":  { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#0b0b0b" },
+    "label":  { "fontFace": "Segoe UI", "fontSize": 10, "color": "#52514e" },
+    "callout":{ "fontFace": "Segoe UI Semibold", "fontSize": 28, "color": "#1f3864" }
+  },
+  "visualStyles": {
+    "*": { "*": {
+      "border":     [{ "show": true, "color": { "solid": { "color": "#d9dee7" } }, "radius": 12 }],
+      "background": [{ "show": true, "color": { "solid": { "color": "#ffffff" } } }]
+    } },
+    "page": { "*": { "background": [{ "color": { "solid": { "color": "#f6f8fb" } }, "transparency": 0 }] } }
+  }
+}
